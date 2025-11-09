@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+  <title>My Contacts - VCard Pro</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      color: #333;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    /* Top App Bar */
+    .top-bar {
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      padding: 16px 20px;
+      color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .top-bar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .top-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .back-button {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .top-bar-title-section {
+      flex: 1;
+    }
+
+    .top-bar-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .top-bar-subtitle {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .refresh-button {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .refresh-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Search Bar */
+    .search-container {
+      padding: 0 16px 16px;
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+    }
+
+    .search-box {
+      background: white;
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-icon {
+      font-size: 20px;
+      color: #666;
+    }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      background: transparent;
+    }
+
+    .search-input::placeholder {
+      color: #999;
+    }
+
+    .clear-button {
+      background: none;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px;
+    }
+
+    /* Loading State */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: calc(100vh - 180px);
+      gap: 16px;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #e0e0e0;
+      border-top-color: #8B5CF6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Empty State */
+    .empty-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: calc(100vh - 180px);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .empty-subtitle {
+      font-size: 14px;
+      color: #999;
+    }
+
+    /* Contacts List */
+    .contacts-container {
+      padding-bottom: 80px;
+    }
+
+    .section-header {
+      background: #e0e0e0;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #8B5CF6;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .contact-card {
+      background: white;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .contact-card:hover {
+      background: #f9f9f9;
+    }
+
+    .contact-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #E3F2FD;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: bold;
+      color: #1976D2;
+    }
+
+    .contact-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .contact-name {
+      font-size: 16px;
+      font-weight: 500;
+      color: #1a1a1a;
+      margin-bottom: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .contact-detail {
+      font-size: 14px;
+      color: #666;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .contact-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-button {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 18px;
+      color: #8B5CF6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .action-button:hover {
+      background: #f0f0f0;
+    }
+
+    /* FAB Button */
+    .fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #8B5CF6;
+      color: white;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .fab:hover {
+      background: #7C3AED;
+      transform: scale(1.1);
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      animation: fadeIn 0.3s;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* Bottom Sheet */
+    .bottom-sheet {
+      background: white;
+      border-radius: 24px 24px 0 0;
+      width: 100%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      animation: slideUp 0.3s;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+      }
+
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    .bottom-sheet-content {
+      padding: 24px;
+    }
+
+    .bottom-sheet-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #E3F2FD;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: bold;
+      color: #1976D2;
+      margin: 0 auto 16px;
+    }
+
+    .bottom-sheet-name {
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 24px;
+      color: #1a1a1a;
+    }
+
+    .detail-card {
+      background: #f9f9f9;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+    }
+
+    .detail-card:hover {
+      background: #f0f0f0;
+    }
+
+    .detail-icon {
+      font-size: 24px;
+      color: #8B5CF6;
+    }
+
+    .detail-content {
+      flex: 1;
+    }
+
+    .detail-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 2px;
+    }
+
+    .detail-value {
+      font-size: 15px;
+      color: #1a1a1a;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top-bar">
+    <div class="top-bar-header">
+      <div class="top-bar-left">
+        <button class="back-button" onclick="goBack()">←</button>
+        <div class="top-bar-title-section">
+          <div class="top-bar-title">My Contacts</div>
+          <div class="top-bar-subtitle" id="contactCount">0 contacts</div>
+        </div>
+      </div>
+      <button class="refresh-button" onclick="loadContacts()" title="Refresh">🔄</button>
+    </div>
+  </div>
+
+  <div class="search-container" id="searchContainer" style="display: none;">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search contacts..."
+        oninput="filterContacts()">
+      <button class="clear-button" id="clearButton" onclick="clearSearch()" style="display: none;">✕</button>
+    </div>
+  </div>
+
+  <div id="content"></div>
+
+  <button class="fab" id="fab" style="display: none;" onclick="addContact()">+</button>
+
+  <!-- Bottom Sheet Modal -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="bottom-sheet" onclick="event.stopPropagation()">
+      <div class="bottom-sheet-content" id="modalContent"></div>
+    </div>
+  </div>
+
+  <script>
+    const { shell } = require('electron');
+
+    let allContacts = [];
+    let filteredContacts = [];
+    let isLoading = false;
+    let selectedContact = null;
+
+    // Initialize
+    (function init() {
+      const session = localStorage.getItem('userSession');
+      if (!session) {
+        window.location.href = './login.html';
+        return;
+      }
+
+      // Note: In a real Electron app, you'd use Node.js modules to access system contacts
+      // For this demo, we'll use mock data
+      loadContacts();
+    })();
+
+    function loadContacts() {
+      isLoading = true;
+      render();
+
+      // Simulate loading contacts (replace with actual system contact access)
+      setTimeout(() => {
+        allContacts = generateMockContacts();
+        filteredContacts = [...allContacts];
+        isLoading = false;
+        document.getElementById('searchContainer').style.display = 'block';
+        document.getElementById('fab').style.display = 'flex';
+        document.getElementById('contactCount').textContent = `${allContacts.length} contacts`;
+        render();
+      }, 1000);
+    }
+
+    function generateMockContacts() {
+      // Mock contact data for demonstration
+      const contacts = [
+        { id: 1, name: 'Alice Johnson', phone: '+1 234-567-8901', email: 'alice@example.com' },
+        { id: 2, name: 'Bob Smith', phone: '+1 234-567-8902', email: 'bob@example.com' },
+        { id: 3, name: 'Charlie Brown', phone: '+1 234-567-8903', email: null },
+        { id: 4, name: 'David Wilson', phone: '+1 234-567-8904', email: 'david@example.com' },
+        { id: 5, name: 'Emma Davis', phone: '+1 234-567-8905', email: 'emma@example.com' },
+        { id: 6, name: 'Frank Miller', phone: '+1 234-567-8906', email: null },
+        { id: 7, name: 'Grace Lee', phone: '+1 234-567-8907', email: 'grace@example.com' },
+        { id: 8, name: 'Henry Taylor', phone: '+1 234-567-8908', email: 'henry@example.com' },
+      ];
+
+      return contacts.map(c => ({
+        ...c,
+        initials: getInitials(c.name),
+        firstLetter: c.name.charAt(0).toUpperCase()
+      }));
+    }
+
+    function filterContacts() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const clearBtn = document.getElementById('clearButton');
+
+      if (query) {
+        clearBtn.style.display = 'block';
+        filteredContacts = allContacts.filter(contact =>
+          contact.name.toLowerCase().includes(query) ||
+          (contact.phone && contact.phone.includes(query)) ||
+          (contact.email && contact.email.toLowerCase().includes(query))
+        );
+      } else {
+        clearBtn.style.display = 'none';
+        filteredContacts = [...allContacts];
+      }
+
+      document.getElementById('contactCount').textContent = `${filteredContacts.length} contacts`;
+      render();
+    }
+
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      filterContacts();
+    }
+
+    function render() {
+      const content = document.getElementById('content');
+
+      if (isLoading) {
+        content.innerHTML = `
+          <div class="loading-container">
+            <div class="spinner"></div>
+            <div>📱 Loading contacts...</div>
+          </div>
+        `;
+        return;
+      }
+
+      if (filteredContacts.length === 0) {
+        const query = document.getElementById('searchInput').value;
+        content.innerHTML = `
+          <div class="empty-container">
+            <div class="empty-icon">👤</div>
+            <div class="empty-title">${query ? '🔍 No matching contacts' : '📭 No contacts found'}</div>
+            <div class="empty-subtitle">${query ? 'Try a different search term' : 'Add contacts to see them here'}</div>
+          </div>
+        `;
+        return;
+      }
+
+      // Group contacts by first letter
+      const grouped = {};
+      filteredContacts.forEach(contact => {
+        const letter = contact.firstLetter;
+        if (!grouped[letter]) grouped[letter] = [];
+        grouped[letter].push(contact);
+      });
+
+      let html = '<div class="contacts-container">';
+
+      Object.keys(grouped).sort().forEach(letter => {
+        html += `<div class="section-header">${letter}</div>`;
+        grouped[letter].forEach(contact => {
+          html += `
+            <div class="contact-card" onclick="showContactDetail(${contact.id})">
+              <div class="contact-avatar">${contact.initials}</div>
+              <div class="contact-info">
+                <div class="contact-name">${contact.name}</div>
+                ${contact.phone ? `<div class="contact-detail">${contact.phone}</div>` : ''}
+                ${contact.email ? `<div class="contact-detail">${contact.email}</div>` : ''}
+              </div>
+              <div class="contact-actions">
+                ${contact.phone ? `
+                  <button class="action-button" onclick="event.stopPropagation(); callPhone('${contact.phone}')" title="Call">📞</button>
+                  <button class="action-button" onclick="event.stopPropagation(); sendSMS('${contact.phone}')" title="Message">💬</button>
+                ` : ''}
+                ${contact.email ? `
+                  <button class="action-button" onclick="event.stopPropagation(); sendEmail('${contact.email}')" title="Email">📧</button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        });
+      });
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function showContactDetail(contactId) {
+      selectedContact = allContacts.find(c => c.id === contactId);
+      if (!selectedContact) return;
+
+      const modalContent = document.getElementById('modalContent');
+      modalContent.innerHTML = `
+        <div class="bottom-sheet-avatar">${selectedContact.initials}</div>
+        <div class="bottom-sheet-name">${selectedContact.name}</div>
+        
+        ${selectedContact.phone ? `
+          <div class="detail-card" onclick="callPhone('${selectedContact.phone}')">
+            <div class="detail-icon">📞</div>
+            <div class="detail-content">
+              <div class="detail-label">Phone</div>
+              <div class="detail-value">${selectedContact.phone}</div>
+            </div>
+          </div>
+        ` : ''}
+        
+        ${selectedContact.email ? `
+          <div class="detail-card" onclick="sendEmail('${selectedContact.email}')">
+            <div class="detail-icon">📧</div>
+            <div class="detail-content">
+              <div class="detail-label">Email</div>
+              <div class="detail-value">${selectedContact.email}</div>
+            </div>
+          </div>
+        ` : ''}
+      `;
+
+      document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    function closeModal(event) {
+      if (event && event.target.id !== 'modalOverlay') return;
+      document.getElementById('modalOverlay').classList.remove('active');
+      selectedContact = null;
+    }
+
+    function getInitials(name) {
+      return name
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase())
+        .join('')
+        .substring(0, 2);
+    }
+
+    function callPhone(phone) {
+      alert(`Calling ${phone}...\n\nNote: In a full Electron app, this would integrate with your system's phone capabilities.`);
+    }
+
+    function sendSMS(phone) {
+      alert(`Sending SMS to ${phone}...\n\nNote: In a full Electron app, this would open your default SMS application.`);
+    }
+
+    function sendEmail(email) {
+      shell.openExternal(`mailto:${email}`);
+    }
+
+    function addContact() {
+      alert('Add contact feature - Coming soon!\n\nThis would open a form to add a new contact to your system.');
+    }
+
+    function goBack() {
+      window.location.href = './dashboard.html';
+    }
+  </script>
+</body>
+
+</html>

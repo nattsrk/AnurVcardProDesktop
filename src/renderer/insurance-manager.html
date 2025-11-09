@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://vcard.tecgs.com:3000;">
+  <title>ANUR Onewealth - Insurance Manager</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      color: #ffffff;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* Header Section */
+    .header-section {
+      margin-bottom: 32px;
+    }
+
+    .back-button {
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 16px;
+      transition: all 0.3s;
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateX(-4px);
+    }
+
+    .title-card {
+      background: #616161;
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .title-card h1 {
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
+      margin-bottom: 8px;
+    }
+
+    .title-card p {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Loading State */
+    .loading-card {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      color: #333;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #8B5CF6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Error Card */
+    .error-card {
+      background: #FFEBEE;
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      color: #D32F2F;
+    }
+
+    /* Policy Card */
+    .policy-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .policy-header {
+      background: linear-gradient(135deg, #000000 0%, #8B0000 100%);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .policy-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .policy-number {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.9);
+      margin-top: 4px;
+    }
+
+    .download-button {
+      padding: 10px 16px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .download-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Tabs */
+    .tabs-container {
+      display: flex;
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      border-bottom: 2px solid #ddd;
+    }
+
+    .tab-button {
+      flex: 1;
+      padding: 16px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      color: #666;
+      transition: all 0.3s;
+      border-bottom: 3px solid transparent;
+    }
+
+    .tab-button.active {
+      color: #8B0000;
+      border-bottom-color: #8B0000;
+      background: white;
+    }
+
+    .tab-button:hover {
+      background: rgba(139, 0, 0, 0.05);
+    }
+
+    /* Tab Content */
+    .tab-content {
+      padding: 20px;
+      background: white;
+      color: #333;
+    }
+
+    .info-row {
+      display: flex;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      flex: 0 0 40%;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .info-value {
+      flex: 1;
+      color: #666;
+    }
+
+    .status-active {
+      color: #4CAF50;
+      font-weight: bold;
+    }
+
+    .status-inactive {
+      color: #EC4899;
+      font-weight: bold;
+    }
+
+    /* Claims Section */
+    .claims-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .refresh-button {
+      padding: 10px 16px;
+      background: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+      margin-right: 12px;
+    }
+
+    .refresh-button:hover {
+      background: #1976D2;
+      transform: translateY(-2px);
+    }
+
+    .refresh-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .new-claim-button {
+      padding: 10px 20px;
+      background: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .new-claim-button:hover {
+      background: #1976D2;
+      transform: translateY(-2px);
+    }
+
+    .claim-card {
+      background: #f9f9f9;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .claim-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .claim-number {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .claim-date {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .status-pending {
+      background: rgba(139, 92, 246, 0.1);
+      color: #8B5CF6;
+    }
+
+    .status-approved {
+      background: rgba(76, 175, 80, 0.1);
+      color: #4CAF50;
+    }
+
+    .status-rejected {
+      background: rgba(244, 67, 54, 0.1);
+      color: #F44336;
+    }
+
+    .status-paid {
+      background: rgba(33, 150, 243, 0.1);
+      color: #2196F3;
+    }
+
+    .claim-amount {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .claim-description {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .show-progress-button {
+      width: 100%;
+      padding: 10px;
+      background: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 12px;
+      transition: all 0.3s;
+    }
+
+    .show-progress-button:hover {
+      background: #1976D2;
+    }
+
+    /* Timeline */
+    .timeline-container {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 12px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .timeline-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 16px;
+    }
+
+    .timeline-item {
+      display: flex;
+      margin-bottom: 16px;
+    }
+
+    .timeline-marker {
+      flex: 0 0 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .timeline-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      margin-bottom: 8px;
+    }
+
+    .timeline-dot.completed {
+      background: #4CAF50;
+    }
+
+    .timeline-dot.active {
+      background: #8B5CF6;
+    }
+
+    .timeline-dot.pending {
+      background: #E0E0E0;
+    }
+
+    .timeline-line {
+      width: 2px;
+      flex: 1;
+      background: #E0E0E0;
+    }
+
+    .timeline-content {
+      flex: 1;
+      padding-left: 16px;
+    }
+
+    .timeline-status {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .timeline-status.active {
+      color: #8B5CF6;
+    }
+
+    .timeline-description {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .timeline-date {
+      font-size: 10px;
+      color: #999;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      border-radius: 12px;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .empty-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .empty-text {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #333;
+      background: white;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: #2196F3;
+    }
+
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .error-message {
+      color: #F44336;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .modal-button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .modal-button.primary {
+      background: #2196F3;
+      color: white;
+    }
+
+    .modal-button.primary:hover {
+      background: #1976D2;
+    }
+
+    .modal-button.secondary {
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      color: #666;
+    }
+
+    .modal-button.secondary:hover {
+      background: #e0e0e0;
+    }
+
+    .modal-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container" id="root">
+    <!-- Content will be rendered here -->
+  </div>
+
+  <!-- Claim Creation Modal -->
+  <div class="modal-overlay" id="claimModal">
+    <div class="modal-content">
+      <h2 class="modal-title">File New Claim</h2>
+
+      <div class="form-group">
+        <label class="form-label">Claim Type</label>
+        <select class="form-select" id="claimType">
+          <option value="Medical">Medical</option>
+          <option value="Accident">Accident</option>
+          <option value="Surgery">Surgery</option>
+          <option value="Dental">Dental</option>
+          <option value="Emergency">Emergency</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Claim Amount (₹)</label>
+        <input type="number" class="form-input" id="claimAmount" placeholder="Enter amount" min="0" step="0.01">
+        <div class="error-message" id="amountError" style="display: none;">Please enter a valid amount</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" id="claimDescription" placeholder="Describe your claim..."></textarea>
+        <div class="error-message" id="descriptionError" style="display: none;">Please enter a description</div>
+      </div>
+
+      <div class="modal-buttons">
+        <button class="modal-button secondary" onclick="closeClaimModal()">Cancel</button>
+        <button class="modal-button primary" id="submitClaimButton" onclick="submitClaim()">Submit Claim</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check session
+    (function checkSession() {
+      const session = localStorage.getItem('userSession');
+      if (!session) {
+        window.location.href = './login.html';
+        return;
+      }
+    })();
+
+    const userSession = JSON.parse(localStorage.getItem('userSession') || '{}');
+    const userId = userSession.userId;
+    let insuranceData = null;
+    let selectedPolicyForClaim = null;
+    let userName = 'Policy Holder'; // Store user name globally
+    let claimTimelineVisible = {};
+
+    // Load insurance data
+    async function loadInsuranceData() {
+      const root = document.getElementById('root');
+
+      root.innerHTML = `
+    <div class="header-section">
+      <button class="back-button" onclick="goToDashboard()">← Back to Dashboard</button>
+      <div class="title-card">
+        <h1>Insurance Manager</h1>
+        <p>User ID: ${userId}</p>
+      </div>
+    </div>
+    
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <p>Loading insurance data...</p>
+    </div>
+  `;
+
+      try {
+        const response = await fetch(`https://vcard.tecgs.com:3000/api/insurance/user/${userId}`);
+
+        if (!response.ok) {
+          throw new Error('Failed to load insurance data');
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.policies) {
+          insuranceData = data;
+
+          // ✅ Extract user name from response
+          if (data.userName) {
+            userName = data.userName;
+          } else if (data.policies.length > 0 && data.policies[0].userName) {
+            userName = data.policies[0].userName;
+          }
+
+          renderPolicies(data.policies);
+        } else {
+          renderError('Failed to load insurance data');
+        }
+      } catch (error) {
+        console.error('[INSURANCE] Error:', error);
+        renderError('Network error: ' + error.message);
+      }
+    }
+
+    function renderPolicies(policies) {
+      const root = document.getElementById('root');
+
+      let html = `
+        <div class="header-section">
+          <button class="back-button" onclick="goToDashboard()">← Back to Dashboard</button>
+          <div class="title-card">
+            <h1>Insurance Manager</h1>
+            <p>User ID: ${userId}</p>
+          </div>
+        </div>
+      `;
+
+      if (policies.length === 0) {
+        html += `
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <div class="empty-title">No Insurance Policies</div>
+            <div class="empty-text">No policies found for this user</div>
+          </div>
+        `;
+      } else {
+        policies.forEach(policy => {
+          html += renderPolicyCard(policy);
+        });
+      }
+
+      root.innerHTML = html;
+    }
+
+    function renderPolicyCard(policy) {
+      const activeTab = window[`activeTab_${policy.id}`] || 0;
+
+      return `
+        <div class="policy-card">
+          <div class="policy-header">
+            <div>
+              <div class="policy-title">Insurance Policy</div>
+              <div class="policy-number">${policy.policyNumber}</div>
+            </div>
+            <button class="download-button" onclick="downloadPolicyPDF(${policy.id})">
+              💾 Download PDF
+            </button>
+          </div>
+          
+          <div class="tabs-container">
+            <button class="tab-button ${activeTab === 0 ? 'active' : ''}" onclick="switchTab(${policy.id}, 0)">
+              Policy Details
+            </button>
+            <button class="tab-button ${activeTab === 1 ? 'active' : ''}" onclick="switchTab(${policy.id}, 1)">
+              Claim Status
+            </button>
+          </div>
+          
+          <div class="tab-content" id="tabContent_${policy.id}">
+            ${activeTab === 0 ? renderPolicyDetails(policy) : renderClaimStatus(policy)}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPolicyDetails(policy) {
+      return `
+      <div class="info-row">
+  <div class="info-label">Policyholder:</div>
+  <div class="info-value">${userName}</div>
+</div>
+        <div class="info-row">
+          <div class="info-label">Policy Number:</div>
+          <div class="info-value">${policy.policyNumber}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Policy Type:</div>
+          <div class="info-value">${policy.policyType}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Insurer:</div>
+          <div class="info-value">${policy.insurerName}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Premium:</div>
+          <div class="info-value">${formatCurrency(policy.premiumAmount)} (Annual)</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Sum Assured:</div>
+          <div class="info-value">${formatCurrency(policy.sumAssured)}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Status:</div>
+          <div class="info-value ${policy.status.toLowerCase() === 'active' ? 'status-active' : 'status-inactive'}">
+            ${policy.status}
+          </div>
+        </div>
+        ${policy.claims ? `
+        <div class="info-row">
+          <div class="info-label">Claims:</div>
+          <div class="info-value">${policy.claims.length} ${policy.claims.length === 1 ? 'claim' : 'claims'}</div>
+        </div>
+        ` : ''}
+      `;
+    }
+
+    function renderClaimStatus(policy) {
+      if (!policy.claims || policy.claims.length === 0) {
+        return `
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <div class="empty-title">No Claims Filed</div>
+            <div class="empty-text">This policy has no active or historical claims</div>
+            <button class="new-claim-button" onclick="openClaimModal(${policy.id})">File New Claim</button>
+          </div>
+        `;
+      }
+
+      let html = `
+        <div class="claims-header">
+          <h3>Claims (${policy.claims.length})</h3>
+          <div style="display: flex; align-items: center;">
+            <button class="refresh-button" onclick="refreshClaims(${policy.id})" id="refreshBtn_${policy.id}">🔄 Refresh</button>
+            <button class="new-claim-button" onclick="openClaimModal(${policy.id})">+ New Claim</button>
+          </div>
+        </div>
+      `;
+
+      policy.claims.forEach(claim => {
+        const showTimeline = claimTimelineVisible[claim.id] || false;
+        html += `
+          <div class="claim-card">
+            <div class="claim-header">
+              <div>
+                <div class="claim-number">${claim.claimNumber || 'Unknown Claim'}</div>
+                <div class="claim-date">Filed: ${formatDate(claim.submittedDate)}</div>
+              </div>
+              <div class="status-badge status-${(claim.claimStatus || 'pending').toLowerCase()}">
+                ${claim.claimStatus || 'Pending'}
+              </div>
+            </div>
+            <div class="claim-amount">Amount: ${formatCurrency(claim.amount)}</div>
+            ${claim.description ? `<div class="claim-description">${claim.description}</div>` : ''}
+          </div>
+          
+          ${showTimeline ? renderTimeline(claim) : ''}
+          
+          <button class="show-progress-button" onclick="toggleTimeline(${claim.id}, ${policy.id})">
+            ${showTimeline ? 'Hide Progress' : 'Show Progress'}
+          </button>
+        `;
+      });
+
+      return html;
+    }
+
+    function renderTimeline(claim) {
+      const timeline = createClaimTimeline(claim);
+
+      let html = `
+        <div class="timeline-container">
+          <div class="timeline-title">Progress Timeline</div>
+      `;
+
+      timeline.forEach((step, index) => {
+        const isLast = index === timeline.length - 1;
+        html += `
+          <div class="timeline-item">
+            <div class="timeline-marker">
+              <div class="timeline-dot ${step.isCompleted ? 'completed' : (step.isActive ? 'active' : 'pending')}"></div>
+              ${!isLast ? '<div class="timeline-line"></div>' : ''}
+            </div>
+            <div class="timeline-content">
+              <div class="timeline-status ${step.isActive ? 'active' : ''}">${step.status}</div>
+              <div class="timeline-description">${step.description}</div>
+              ${step.date ? `<div class="timeline-date">${formatDate(step.date)}</div>` : ''}
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+      return html;
+    }
+
+    function renderError(message) {
+      const root = document.getElementById('root');
+      root.innerHTML = `
+        <div class="header-section">
+          <button class="back-button" onclick="goToDashboard()">← Back to Dashboard</button>
+          <div class="title-card">
+            <h1>Insurance Manager</h1>
+            <p>User ID: ${userId}</p>
+          </div>
+        </div>
+        
+        <div class="error-card">
+          <h2>Error Loading Data</h2>
+          <p>${message}</p>
+          <button class="new-claim-button" onclick="loadInsuranceData()" style="margin-top: 16px;">Retry</button>
+        </div>
+      `;
+    }
+
+    // Helper functions
+    function formatCurrency(amount) {
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR'
+      }).format(amount);
+    }
+
+    function formatDate(dateString) {
+      try {
+        return dateString.substring(0, 10).replace(/-/g, '/');
+      } catch (e) {
+        return dateString;
+      }
+    }
+
+    function createClaimTimeline(claim) {
+      const allSteps = ['Pending', 'Approved', 'Paid'];
+      const currentStatus = claim.status;
+      const currentIndex = allSteps.indexOf(currentStatus);
+
+      return allSteps.map((status, index) => ({
+        status: status,
+        date: index <= currentIndex ? claim.submittedDate : null,
+        description: getStatusDescription(status),
+        isCompleted: index < currentIndex,
+        isActive: index === currentIndex
+      }));
+    }
+
+    function getStatusDescription(status) {
+      const descriptions = {
+        'Pending': 'Claim submitted and under review',
+        'Approved': 'Claim approved by insurance team',
+        'Rejected': 'Claim has been rejected',
+        'Paid': 'Settlement amount has been paid',
+        'Cancelled': 'Claim was cancelled'
+      };
+      return descriptions[status] || 'Status update';
+    }
+
+    // Tab switching
+    function switchTab(policyId, tabIndex) {
+      window[`activeTab_${policyId}`] = tabIndex;
+      const policy = insuranceData.policies.find(p => p.id === policyId);
+      if (policy) {
+        const tabContent = document.getElementById(`tabContent_${policyId}`);
+        tabContent.innerHTML = tabIndex === 0 ? renderPolicyDetails(policy) : renderClaimStatus(policy);
+
+        // Update tab buttons
+        const tabs = tabContent.parentElement.querySelectorAll('.tab-button');
+        tabs.forEach((tab, index) => {
+          if (index === tabIndex) {
+            tab.classList.add('active');
+          } else {
+            tab.classList.remove('active');
+          }
+        });
+      }
+    }
+
+    // Timeline toggle
+    function toggleTimeline(claimId, policyId) {
+      claimTimelineVisible[claimId] = !claimTimelineVisible[claimId];
+      switchTab(policyId, 1); // Refresh claim status tab
+    }
+
+    // Claim modal functions
+    function openClaimModal(policyId) {
+      selectedPolicyForClaim = policyId;
+      document.getElementById('claimModal').classList.add('show');
+      // Reset form
+      document.getElementById('claimType').value = 'Medical';
+      document.getElementById('claimAmount').value = '';
+      document.getElementById('claimDescription').value = '';
+      document.getElementById('amountError').style.display = 'none';
+      document.getElementById('descriptionError').style.display = 'none';
+    }
+
+    function closeClaimModal() {
+      document.getElementById('claimModal').classList.remove('show');
+      selectedPolicyForClaim = null;
+    }
+
+    async function submitClaim() {
+      const claimType = document.getElementById('claimType').value;
+      const claimAmount = document.getElementById('claimAmount').value;
+      const description = document.getElementById('claimDescription').value;
+
+      // Validation
+      let hasError = false;
+
+      if (!claimAmount || parseFloat(claimAmount) <= 0) {
+        document.getElementById('amountError').style.display = 'block';
+        hasError = true;
+      } else {
+        document.getElementById('amountError').style.display = 'none';
+      }
+
+      if (!description.trim()) {
+        document.getElementById('descriptionError').style.display = 'block';
+        hasError = true;
+      } else {
+        document.getElementById('descriptionError').style.display = 'none';
+      }
+
+      if (hasError) return;
+
+      // Disable button
+      const submitButton = document.getElementById('submitClaimButton');
+      submitButton.disabled = true;
+      submitButton.textContent = 'Submitting...';
+
+      try {
+        const response = await fetch(`https://vcard.tecgs.com:3000/api/insurance/policy/${selectedPolicyForClaim}/claims`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            claimType: claimType,
+            claimAmount: parseFloat(claimAmount),
+            description: description,
+            claimDate: new Date().toISOString().split('T')[0],
+            claimStatus: 'Pending'
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert('Claim submitted successfully!');
+          closeClaimModal();
+          loadInsuranceData(); // Reload data
+        } else {
+          alert('Failed to submit claim: ' + (data.message || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('[CLAIM] Error:', error);
+        alert('Network error: ' + error.message);
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Submit Claim';
+      }
+    }
+
+
+    // PDF Download Function
+    function downloadPolicyPDF(policyId) {
+      const policy = insuranceData.policies.find(p => p.id === policyId);
+      if (!policy) return;
+
+      try {
+        // Create new PDF document
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        let yPosition = 20;
+        const leftMargin = 20;
+        const pageWidth = doc.internal.pageSize.getWidth();
+
+        // Title
+        doc.setFontSize(20);
+        doc.setFont(undefined, 'bold');
+        doc.text('INSURANCE POLICY DETAILS', leftMargin, yPosition);
+        yPosition += 15;
+
+        // Add a line separator
+        doc.setLineWidth(0.5);
+        doc.line(leftMargin, yPosition, pageWidth - leftMargin, yPosition);
+        yPosition += 10;
+
+        // Policy Information Section
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'normal');
+
+        // Policy Number
+        doc.setFont(undefined, 'bold');
+        doc.text('Policy Number:', leftMargin, yPosition);
+        doc.setFont(undefined, 'normal');
+        doc.text(policy.policyNumber || 'N/A', leftMargin + 50, yPosition);
+        yPosition += 8;
+
+        // Policy Type
+        doc.setFont(undefined, 'bold');
+        doc.text('Policy Type:', leftMargin, yPosition);
+        doc.setFont(undefined, 'normal');
+        doc.text(policy.policyType || 'N/A', leftMargin + 50, yPosition);
+        yPosition += 8;
+
+        // Insurer
+        doc.setFont(undefined, 'bold');
+        doc.text('Insurer:', leftMargin, yPosition);
+        doc.setFont(undefined, 'normal');
+        doc.text(policy.insurerName || 'N/A', leftMargin + 50, yPosition);
+        yPosition += 8;
+
+        // Premium
+        doc.setFont(undefined, 'bold');
+        doc.text('Premium:', leftMargin, yPosition);
+        doc.setFont(undefined, 'normal');
+        doc.text(formatCurrency(policy.premiumAmount || 0) + ' (Annual)', leftMargin + 50, yPosition);
+        yPosition += 8;
+
+        // Sum Assured
+        doc.setFont(undefined, 'bold');
+        doc.text('Sum Assured:', leftMargin, yPosition);
+        doc.setFont(undefined, 'normal');
+        doc.text(formatCurrency(policy.sumAssured || 0), leftMargin + 50, yPosition);
+        yPosition += 8;
+
+        // Status
+        doc.setFont(undefined, 'bold');
+        doc.text('Status:', leftMargin, yPosition);
+        doc.setFont(undefined, 'normal');
+        doc.text(policy.status || 'N/A', leftMargin + 50, yPosition);
+        yPosition += 8;
+
+        // Policy Start Date - FIXED: Format date properly
+        doc.setFont(undefined, 'bold');
+        doc.text('Policy Start Date:', leftMargin, yPosition);
+        doc.setFont(undefined, 'normal');
+        const startDate = policy.policyStartDate ? formatDate(policy.policyStartDate) : 'N/A';
+        doc.text(startDate, leftMargin + 50, yPosition);
+        yPosition += 8;
+
+        // Policy End Date - FIXED: Format date properly
+        doc.setFont(undefined, 'bold');
+        doc.text('Policy End Date:', leftMargin, yPosition);
+        doc.setFont(undefined, 'normal');
+        const endDate = policy.policyEndDate ? formatDate(policy.policyEndDate) : 'N/A';
+        doc.text(endDate, leftMargin + 50, yPosition);
+        yPosition += 15;
+
+        // Claims Section
+        if (policy.claims && policy.claims.length > 0) {
+          // Add line separator
+          doc.setLineWidth(0.5);
+          doc.line(leftMargin, yPosition, pageWidth - leftMargin, yPosition);
+          yPosition += 10;
+
+          doc.setFontSize(16);
+          doc.setFont(undefined, 'bold');
+          doc.text('CLAIMS HISTORY', leftMargin, yPosition);
+          yPosition += 10;
+
+          doc.setFontSize(12);
+          doc.setFont(undefined, 'normal');
+
+          policy.claims.forEach((claim, index) => {
+            // Check if we need a new page
+            if (yPosition > 250) {
+              doc.addPage();
+              yPosition = 20;
+            }
+
+            doc.setFont(undefined, 'bold');
+            doc.text(`Claim ${index + 1}:`, leftMargin, yPosition);
+            yPosition += 7;
+
+            doc.setFont(undefined, 'normal');
+
+            // Claim Number
+            const claimNumber = claim.claimNumber || claim.claim_number || 'N/A';
+            doc.text(`  Claim Number: ${claimNumber}`, leftMargin + 5, yPosition);
+            yPosition += 6;
+
+            // Amount - FIXED: Use claimAmount or amount field
+            const claimAmount = claim.claimAmount || claim.amount || claim.claim_amount || 0;
+            doc.text(`  Amount: ${formatCurrency(claimAmount)}`, leftMargin + 5, yPosition);
+            yPosition += 6;
+
+            // Status - FIXED: Use claimStatus or status field
+            const claimStatus = claim.claimStatus || claim.status || claim.claim_status || 'Pending';
+            doc.text(`  Status: ${claimStatus}`, leftMargin + 5, yPosition);
+            yPosition += 6;
+
+            // Submitted Date - FIXED: Use submittedDate or claimDate
+            const submittedDate = claim.submittedDate || claim.claimDate || claim.claim_date || claim.created_at;
+            const formattedDate = submittedDate ? formatDate(submittedDate) : 'N/A';
+            doc.text(`  Submitted: ${formattedDate}`, leftMargin + 5, yPosition);
+            yPosition += 6;
+
+            // Description
+            if (claim.description && claim.description.trim()) {
+              // Word wrap for description
+              const descLines = doc.splitTextToSize(`  Description: ${claim.description}`, pageWidth - leftMargin - 30);
+              doc.text(descLines, leftMargin + 5, yPosition);
+              yPosition += (descLines.length * 6);
+            }
+
+            yPosition += 5; // Extra space between claims
+          });
+        } else {
+          // Add line separator
+          doc.setLineWidth(0.5);
+          doc.line(leftMargin, yPosition, pageWidth - leftMargin, yPosition);
+          yPosition += 10;
+
+          doc.setFontSize(16);
+          doc.setFont(undefined, 'bold');
+          doc.text('CLAIMS HISTORY', leftMargin, yPosition);
+          yPosition += 10;
+
+          doc.setFontSize(12);
+          doc.setFont(undefined, 'normal');
+          doc.text('No claims filed for this policy', leftMargin, yPosition);
+        }
+
+        // Footer
+        const pageHeight = doc.internal.pageSize.getHeight();
+        doc.setFontSize(9);
+        doc.setTextColor(128, 128, 128);
+
+        const currentDate = new Date().toLocaleString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+
+        doc.text(`Generated on: ${currentDate}`, leftMargin, pageHeight - 20);
+        doc.text(`User ID: ${userId}`, leftMargin, pageHeight - 15);
+        doc.text(`Policy Holder: ${userName}`, leftMargin, pageHeight - 10);
+
+
+        // Save the PDF
+        const fileName = `Policy_${policy.policyNumber}_${Date.now()}.pdf`;
+        doc.save(fileName);
+
+        alert(`PDF downloaded successfully!\n\nFile: ${fileName}`);
+
+      } catch (error) {
+        console.error('[PDF] Error generating PDF:', error);
+        alert('Error generating PDF: ' + error.message);
+      }
+    }
+
+    // Refresh claims for a specific policy
+    function refreshClaims(policyId) {
+      const refreshBtn = document.getElementById(`refreshBtn_${policyId}`);
+      if (refreshBtn) {
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = '🔄 Refreshing...';
+      }
+
+      // Reload insurance data and re-render
+      loadInsuranceData().finally(() => {
+        if (refreshBtn) {
+          refreshBtn.disabled = false;
+          refreshBtn.textContent = '🔄 Refresh';
+        }
+      });
+    }
+
+    // Navigation
+    function goToDashboard() {
+      window.location.href = './dashboard.html';
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      loadInsuranceData();
+    });
+
+    // Close modal on outside click
+    document.getElementById('claimModal').addEventListener('click', (e) => {
+      if (e.target.id === 'claimModal') {
+        closeClaimModal();
+      }
+    });
+  </script>
+</body>
+
+</html>

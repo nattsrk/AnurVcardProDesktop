@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://vcard.tecgs.com:3000;">
+  <title>Received Contacts - VCard Pro</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      color: #333;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    /* Top App Bar */
+    .top-bar {
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      padding: 16px 20px;
+      color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .back-button {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .top-bar-title {
+      font-size: 20px;
+      font-weight: 600;
+      flex: 1;
+    }
+
+    /* Loading State */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: calc(100vh - 72px);
+      gap: 16px;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #e0e0e0;
+      border-top-color: #8B5CF6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Empty State */
+    .empty-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: calc(100vh - 72px);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .empty-subtitle {
+      font-size: 14px;
+      color: #999;
+    }
+
+    /* Contacts List */
+    .contacts-container {
+      padding: 16px;
+      padding-bottom: 80px;
+    }
+
+    /* Contact Card */
+    .contact-card {
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s;
+      animation: slideIn 0.5s ease-out;
+    }
+
+    .contact-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .contact-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .contact-icon {
+      font-size: 28px;
+    }
+
+    .contact-name {
+      font-size: 18px;
+      font-weight: bold;
+      flex: 1;
+    }
+
+    .contact-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .info-icon {
+      font-size: 18px;
+      width: 20px;
+    }
+
+    .info-text {
+      flex: 1;
+      opacity: 0.95;
+    }
+
+    .contact-meta {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 12px;
+      opacity: 0.8;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .action-button {
+      flex: 1;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .action-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+    }
+
+    /* Instructions Banner */
+    .instructions-banner {
+      background: linear-gradient(135deg, #A855F7 0%, #D946EF 100%);
+      color: white;
+      padding: 16px;
+      margin: 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3);
+    }
+
+    .instructions-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top-bar">
+    <button class="back-button" onclick="goBack()">←</button>
+    <div class="top-bar-title">Received Contacts</div>
+  </div>
+
+  <div id="content"></div>
+
+  <script>
+    const { shell } = require('electron');
+
+    let contacts = [];
+    let isLoading = true;
+
+    // Initialize
+    (function init() {
+      const session = localStorage.getItem('userSession');
+      if (!session) {
+        window.location.href = './login.html';
+        return;
+      }
+
+      const userSession = JSON.parse(session);
+      loadReceivedContacts(userSession.userId);
+    })();
+
+    function loadReceivedContacts(userId) {
+      isLoading = true;
+      render();
+
+      fetch(`https://vcard.tecgs.com:3000/api/received/${userId}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.contacts) {
+            contacts = data.contacts.map(contact => {
+              // Parse visitor contact data if it's a JSON string
+              let visitorData = null;
+              if (contact.visitorContactData) {
+                try {
+                  visitorData = typeof contact.visitorContactData === 'string'
+                    ? JSON.parse(contact.visitorContactData)
+                    : contact.visitorContactData;
+                } catch (e) {
+                  console.error('Error parsing visitor data:', e);
+                }
+              }
+
+              return {
+                ...contact,
+                parsedVisitorData: visitorData,
+                displayName: visitorData?.name || 'Unknown Contact',
+                displayEmail: contact.viewerEmail || visitorData?.email || 'N/A',
+                displayPhone: contact.viewerPhone || visitorData?.phone || 'N/A'
+              };
+            });
+            isLoading = false;
+            render();
+          } else {
+            isLoading = false;
+            renderError('Failed to load contacts');
+          }
+        })
+        .catch(error => {
+          console.error('[RECEIVED] Error:', error);
+          isLoading = false;
+          renderError('Network error: ' + error.message);
+        });
+    }
+
+    function render() {
+      const content = document.getElementById('content');
+
+      if (isLoading) {
+        content.innerHTML = `
+          <div class="loading-container">
+            <div class="spinner"></div>
+            <div>Loading received contacts...</div>
+          </div>
+        `;
+        return;
+      }
+
+      if (contacts.length === 0) {
+        content.innerHTML = `
+          <div class="empty-container">
+            <div class="empty-icon">📭</div>
+            <div class="empty-title">No contacts received</div>
+            <div class="empty-subtitle">Contacts shared with you will appear here</div>
+          </div>
+        `;
+        return;
+      }
+
+      let html = `
+        <div class="instructions-banner">
+          <div class="instructions-title">💡 Quick Tip</div>
+          <div>Long press any contact card to create a widget for quick access on your home screen!</div>
+        </div>
+        <div class="contacts-container">
+      `;
+
+      contacts.forEach(contact => {
+        const date = new Date(contact.createdAt);
+        const formattedDate = date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+
+        html += `
+          <div class="contact-card" onclick="showContactDetail(${contact.id})" 
+               oncontextmenu="event.preventDefault(); createWidget(${contact.id})">
+            <div class="contact-header">
+              <div class="contact-icon">👤</div>
+              <div class="contact-name">${contact.displayName}</div>
+            </div>
+            
+            <div class="contact-info">
+              <div class="info-row">
+                <div class="info-icon">📧</div>
+                <div class="info-text">${contact.displayEmail}</div>
+              </div>
+              <div class="info-row">
+                <div class="info-icon">📞</div>
+                <div class="info-text">${contact.displayPhone}</div>
+              </div>
+              ${contact.shareMethod ? `
+                <div class="info-row">
+                  <div class="info-icon">🔗</div>
+                  <div class="info-text">Shared via ${contact.shareMethod}</div>
+                </div>
+              ` : ''}
+            </div>
+            
+            <div class="action-buttons">
+              ${contact.displayPhone !== 'N/A' ? `
+                <button class="action-button" onclick="event.stopPropagation(); callPhone('${contact.displayPhone}')">
+                  📞 Call
+                </button>
+                <button class="action-button" onclick="event.stopPropagation(); sendSMS('${contact.displayPhone}')">
+                  💬 Message
+                </button>
+              ` : ''}
+              ${contact.displayEmail !== 'N/A' ? `
+                <button class="action-button" onclick="event.stopPropagation(); sendEmail('${contact.displayEmail}')">
+                  📧 Email
+                </button>
+              ` : ''}
+            </div>
+            
+            <div class="contact-meta">
+              <span>Received: ${formattedDate}</span>
+              ${contact.location ? `<span>📍 ${contact.location}</span>` : ''}
+            </div>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function renderError(message) {
+      const content = document.getElementById('content');
+      content.innerHTML = `
+        <div class="empty-container">
+          <div class="empty-icon">⚠️</div>
+          <div class="empty-title">Error Loading Contacts</div>
+          <div class="empty-subtitle">${message}</div>
+        </div>
+      `;
+    }
+
+    function showContactDetail(contactId) {
+      const contact = contacts.find(c => c.id === contactId);
+      if (!contact) return;
+
+      alert(`Contact Details:\n\nName: ${contact.displayName}\nEmail: ${contact.displayEmail}\nPhone: ${contact.displayPhone}\n\nFull contact detail view - Coming soon!`);
+    }
+
+    function createWidget(contactId) {
+      const contact = contacts.find(c => c.id === contactId);
+      if (!contact) return;
+
+      alert(`Widget ready for ${contact.displayName}!\n\nNote: In a full desktop app, this would create a desktop widget for quick access to this contact.`);
+    }
+
+    function callPhone(phone) {
+      alert(`Calling ${phone}...\n\nNote: In a full Electron app, this would integrate with your system's phone capabilities.`);
+    }
+
+    function sendSMS(phone) {
+      alert(`Sending SMS to ${phone}...\n\nNote: In a full Electron app, this would open your default SMS application.`);
+    }
+
+    function sendEmail(email) {
+      shell.openExternal(`mailto:${email}`);
+    }
+
+    function goBack() {
+      window.location.href = './dashboard.html';
+    }
+  </script>
+</body>
+
+</html>

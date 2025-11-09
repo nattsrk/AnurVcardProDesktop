@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>OneWealth - Buy New Policy</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      margin: 0;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      padding: 24px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-primary {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #ddd;
+    }
+
+    .product-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      transition: transform 0.2s;
+    }
+
+    .product-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .tag {
+      background: #2196F3;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .price {
+      color: #4CAF50;
+      font-size: 20px;
+      font-weight: bold;
+      margin: 8px 0;
+    }
+
+    .desc {
+      color: #555;
+      font-size: 14px;
+      margin: 8px 0;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .option {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+
+    .option.active {
+      border-color: #4CAF50;
+      background: #E8F5E9;
+    }
+
+    .summary {
+      background: #f0f9ff;
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Buy New Policy</h2>
+      <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">← Back</button>
+    </div>
+
+    <div>
+      <button class="btn btn-primary" onclick="switchCategory('Life')">Life Insurance</button>
+      <button class="btn btn-primary" style="background:#2196F3;" onclick="switchCategory('Health')">Health
+        Insurance</button>
+    </div>
+
+    <div id="productList" style="margin-top:24px;">Loading products...</div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal">
+      <h3 id="modalTitle"></h3>
+      <p id="modalInsurer"></p>
+      <p id="modalDescription"></p>
+      <div id="coverageOptions"></div>
+      <div id="tenureOptions" style="margin-top:12px;"></div>
+      <div class="summary">
+        <h4>Premium Summary</h4>
+        <p id="premiumSummary"></p>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:16px;">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="buyPolicy()">Buy Policy</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentCategory = 'Life';
+    let products = [];
+    let selectedProduct = null;
+    let selectedCoverage = null;
+    let selectedTenure = null;
+
+    window.addEventListener('DOMContentLoaded', () => loadProducts('Life'));
+
+    async function switchCategory(type) {
+      currentCategory = type;
+      loadProducts(type);
+    }
+
+    async function loadProducts(type) {
+      const list = document.getElementById('productList');
+      list.innerHTML = `<p>Loading ${type} policies...</p>`;
+      try {
+        const res = await fetch(`https://vcard.tecgs.com:3000/api/policy-products/products?type=${type}`);
+        const data = await res.json();
+        if (!data.success || !data.products?.length) {
+          list.innerHTML = '<p>No policies found.</p>';
+          return;
+        }
+        products = data.products;
+        list.innerHTML = products.map(p => `
+          <div class="product-card">
+            <h3>${p.productName}</h3>
+            <span class="tag">${p.productType}</span>
+            <div><b>Insurer:</b> ${p.insurerName}</div>
+            <div class="desc">${p.description}</div>
+            ${(p.features || []).slice(0, 3).map(f => `✅ ${f}<br>`).join('')}
+            <div class="price">₹${p.basePremium.toLocaleString()} /year</div>
+            <button class="btn btn-primary" onclick="openModal(${p.id})">Customize & Buy</button>
+          </div>
+        `).join('');
+      } catch (err) {
+        list.innerHTML = `<p style="color:red;">Error loading policies: ${err.message}</p>`;
+      }
+    }
+
+    async function openModal(id) {
+      try {
+        const res = await fetch(`https://vcard.tecgs.com:3000/api/policy-products/products/${id}`);
+        const data = await res.json();
+        selectedProduct = data.product || data; // depending on backend format
+        selectedCoverage = selectedProduct.baseCoverage;
+        selectedTenure = selectedProduct.tenureOptions[0];
+
+        document.getElementById('modalTitle').innerText = selectedProduct.productName;
+        document.getElementById('modalInsurer').innerText = "Insurer: " + selectedProduct.insurerName;
+        document.getElementById('modalDescription').innerText = selectedProduct.description;
+
+        renderCoverageOptions();
+        renderTenureOptions();
+        updatePremiumSummary();
+
+        document.getElementById('productModal').classList.add('show');
+      } catch (e) {
+        alert("Failed to load product details: " + e.message);
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('productModal').classList.remove('show');
+    }
+
+    function renderCoverageOptions() {
+      const covEl = document.getElementById('coverageOptions');
+      covEl.innerHTML = '<h4>Select Coverage:</h4>' +
+        selectedProduct.coverageOptions.map(cov => `
+          <div class="option ${cov === selectedCoverage ? 'active' : ''}" onclick="selectCoverage(${cov})">
+            ₹${cov.toLocaleString()}
+          </div>
+        `).join('');
+    }
+
+    function renderTenureOptions() {
+      const tenEl = document.getElementById('tenureOptions');
+      tenEl.innerHTML = '<h4>Select Tenure:</h4>' +
+        selectedProduct.tenureOptions.map(t => `
+          <span class="option ${t === selectedTenure ? 'active' : ''}" onclick="selectTenure(${t})">
+            ${t} year${t > 1 ? 's' : ''}
+          </span>
+        `).join('');
+    }
+
+    function selectCoverage(value) {
+      selectedCoverage = value;
+      renderCoverageOptions();
+      updatePremiumSummary();
+    }
+
+    function selectTenure(value) {
+      selectedTenure = value;
+      renderTenureOptions();
+      updatePremiumSummary();
+    }
+
+    function updatePremiumSummary() {
+      const p = selectedProduct;
+      const ratio = selectedCoverage / p.baseCoverage;
+      const tenureFactor = 1 + (selectedTenure * p.premiumMultiplier);
+      const premium = p.basePremium * ratio * tenureFactor;
+      document.getElementById('premiumSummary').innerHTML = `
+        Coverage: ₹${selectedCoverage.toLocaleString()}<br>
+        Tenure: ${selectedTenure} year${selectedTenure > 1 ? 's' : ''}<br>
+        <strong>Annual Premium: ₹${premium.toFixed(2)}</strong>
+      `;
+    }
+
+    async function buyPolicy() {
+      const session = JSON.parse(localStorage.getItem('userSession') || '{}');
+      if (!session.userId) return alert('Please log in first.');
+
+      const p = selectedProduct;
+      const coverageRatio = selectedCoverage / p.baseCoverage;
+      const tenureFactor = 1 + (selectedTenure * p.premiumMultiplier);
+      const premium = p.basePremium * coverageRatio * tenureFactor;
+
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setFullYear(endDate.getFullYear() + selectedTenure);
+
+      const requestBody = {
+        userId: session.userId,
+        policyNumber: `POL-${p.productType[0]}-${Date.now()}`,
+        policyType: p.productType,
+        insurerName: p.insurerName,
+        premiumAmount: premium,
+        sumAssured: selectedCoverage,
+        policyStartDate: startDate.toISOString().split('T')[0],
+        policyEndDate: endDate.toISOString().split('T')[0],
+        status: "Active"
+      };
+
+      try {
+        const res = await fetch('https://vcard.tecgs.com:3000/api/insurance/policy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          alert("✅ Policy purchased successfully!");
+          closeModal();
+          // redirect or refresh manager
+          window.location.href = './insurance-manager.html';
+        } else {
+          alert("❌ Failed: " + (data.message || "Unknown error"));
+        }
+      } catch (err) {
+        alert("Network error: " + err.message);
+      }
+    }
+
+  </script>
+</body>
+
+</html>

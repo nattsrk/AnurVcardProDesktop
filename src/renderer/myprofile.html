@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://vcard.tecgs.com:3000;">
+  <title>My Profile - VCard Pro</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      color: #333;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    /* Top App Bar */
+    .top-bar {
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      padding: 16px 20px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .top-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .back-button {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .top-bar-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .edit-button {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .edit-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Loading State */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: calc(100vh - 72px);
+      gap: 16px;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #e0e0e0;
+      border-top-color: #8B5CF6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Profile Hero Section */
+    .hero-section {
+      background: linear-gradient(180deg, rgba(255, 193, 193, 0.1) 0%, transparent 100%);
+      padding: 24px 16px;
+      text-align: center;
+      animation: slideDown 0.6s ease-out;
+    }
+
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FFC1C1 0%, #FF8A80 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 28px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .profile-name {
+      font-size: 24px;
+      font-weight: bold;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+
+    .profile-company {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(76, 175, 80, 0.1);
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #4CAF50;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4CAF50;
+    }
+
+    /* Section Container */
+    .section {
+      padding: 16px;
+      animation: slideUp 0.6s ease-out;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .section-icon {
+      font-size: 20px;
+      color: #8B5CF6;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    /* Info Card */
+    .info-card {
+      background: white;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .info-card:hover {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .info-card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #E3F2FD;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .info-card-content {
+      flex: 1;
+    }
+
+    .info-card-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 2px;
+    }
+
+    .info-card-value {
+      font-size: 15px;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    .info-card-subtitle {
+      font-size: 11px;
+      color: #999;
+      margin-top: 2px;
+    }
+
+    .info-card-arrow {
+      font-size: 18px;
+      color: #999;
+    }
+
+    /* Stats Section */
+    .stats-card {
+      background: #f9f9f9;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .stats-grid {
+      display: flex;
+      justify-content: space-around;
+      gap: 16px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2196F3;
+      margin-bottom: 4px;
+    }
+
+    .stat-value.green {
+      color: #4CAF50;
+    }
+
+    .stat-value.orange {
+      color: #8B5CF6;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.3;
+    }
+
+    /* Error State */
+    .error-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: calc(100vh - 72px);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .error-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+
+    .error-button {
+      margin-top: 16px;
+      padding: 12px 24px;
+      background: #8B5CF6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .error-button:hover {
+      background: #7C3AED;
+    }
+
+    /* Animations */
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <button class="back-button" onclick="goBack()">←</button>
+      <div class="top-bar-title">My Profile</div>
+    </div>
+    <button class="edit-button" onclick="editProfile()">✏️</button>
+  </div>
+
+  <div id="content"></div>
+
+  <script>
+    let userData = null;
+    let isLoading = true;
+
+    // Check session and load profile
+    (function init() {
+      const session = localStorage.getItem('userSession');
+      if (!session) {
+        window.location.href = './login.html';
+        return;
+      }
+
+      const userSession = JSON.parse(session);
+      loadUserProfile(userSession.userId);
+    })();
+
+    function loadUserProfile(userId) {
+      isLoading = true;
+      render();
+
+      fetch(`https://vcard.tecgs.com:3000/api/users/${userId}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.user) {
+            userData = data.user;
+            isLoading = false;
+            render();
+          } else {
+            isLoading = false;
+            renderError('Failed to load profile');
+          }
+        })
+        .catch(error => {
+          console.error('[PROFILE] Error:', error);
+          isLoading = false;
+          renderError('Network error: ' + error.message);
+        });
+    }
+
+    function render() {
+      const content = document.getElementById('content');
+
+      if (isLoading) {
+        content.innerHTML = `
+          <div class="loading-container">
+            <div class="spinner"></div>
+            <div>Loading profile...</div>
+          </div>
+        `;
+        return;
+      }
+
+      if (!userData) {
+        return;
+      }
+
+      const initials = getInitials(userData.name);
+
+      content.innerHTML = `
+        <div class="hero-section">
+          <div class="profile-avatar">${initials}</div>
+          <div class="profile-name">${userData.name}</div>
+          ${userData.company ? `<div class="profile-company">${userData.company}</div>` : ''}
+          <div class="status-badge">
+            <div class="status-dot"></div>
+            <span>Active</span>
+          </div>
+        </div>
+        
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon">📞</div>
+            <div class="section-title">Contact Information</div>
+          </div>
+          
+          <div class="info-card" onclick="sendEmail('${userData.email}')">
+            <div class="info-card-icon" style="background: #E3F2FD;">📧</div>
+            <div class="info-card-content">
+              <div class="info-card-label">Email</div>
+              <div class="info-card-value">${userData.email}</div>
+              <div class="info-card-subtitle">Primary</div>
+            </div>
+            <div class="info-card-arrow">›</div>
+          </div>
+          
+          ${userData.phone ? `
+          <div class="info-card" onclick="callPhone('${userData.phone}')">
+            <div class="info-card-icon" style="background: #E8F5E9;">📱</div>
+            <div class="info-card-content">
+              <div class="info-card-label">Phone</div>
+              <div class="info-card-value">${userData.phone}</div>
+              <div class="info-card-subtitle">Mobile</div>
+            </div>
+            <div class="info-card-arrow">›</div>
+          </div>
+          ` : ''}
+        </div>
+        
+        ${userData.company || userData.linkedin ? `
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon">👤</div>
+            <div class="section-title">Professional</div>
+          </div>
+          
+          ${userData.company ? `
+          <div class="info-card">
+            <div class="info-card-icon" style="background: #FFF3E0;">⭐</div>
+            <div class="info-card-content">
+              <div class="info-card-label">Organization</div>
+              <div class="info-card-value">${userData.company}</div>
+              <div class="info-card-subtitle">Current workplace</div>
+            </div>
+          </div>
+          ` : ''}
+          
+          ${userData.linkedin ? `
+          <div class="info-card" onclick="openLinkedIn('${userData.linkedin}')">
+            <div class="info-card-icon" style="background: #E3F2FD;">🔗</div>
+            <div class="info-card-content">
+              <div class="info-card-label">LinkedIn</div>
+              <div class="info-card-value">View Profile</div>
+              <div class="info-card-subtitle">Professional network</div>
+            </div>
+            <div class="info-card-arrow">›</div>
+          </div>
+          ` : ''}
+        </div>
+        ` : ''}
+        
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon">⭐</div>
+            <div class="section-title">Activity</div>
+          </div>
+          
+          <div class="stats-card">
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-value">23</div>
+                <div class="stat-label">Contacts<br>Shared</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value green">7</div>
+                <div class="stat-label">Received</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value orange">156</div>
+                <div class="stat-label">Profile<br>Views</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="height: 24px;"></div>
+      `;
+    }
+
+    function renderError(message) {
+      const content = document.getElementById('content');
+      content.innerHTML = `
+        <div class="error-container">
+          <div class="error-title">Unable to load profile</div>
+          <div style="color: #666; margin-top: 8px;">${message}</div>
+          <button class="error-button" onclick="goBack()">Go Back</button>
+        </div>
+      `;
+    }
+
+    function getInitials(name) {
+      return name
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase())
+        .join('')
+        .substring(0, 2);
+    }
+
+    function sendEmail(email) {
+      require('electron').shell.openExternal(`mailto:${email}`);
+    }
+
+    function callPhone(phone) {
+      alert(`Calling ${phone}...`);
+    }
+
+    function openLinkedIn(url) {
+      require('electron').shell.openExternal(url);
+    }
+
+    function editProfile() {
+      alert('Edit profile feature - Coming soon!');
+    }
+
+    function goBack() {
+      window.location.href = './dashboard.html';
+    }
+  </script>
+</body>
+
+</html>

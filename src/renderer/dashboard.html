@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://vcard.tecgs.com:3000;">
+  <title>ANUR Onewealth - Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      color: #ffffff;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* Header Section */
+    .header-section {
+      margin-top: 24px;
+      margin-bottom: 32px;
+      animation: slideDown 0.8s ease-out;
+    }
+
+    .user-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .user-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-right: 16px;
+    }
+
+    .user-greeting {
+      flex: 1;
+    }
+
+    .greeting-text {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 4px;
+    }
+
+    .user-name {
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .notification-bell {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .notification-bell:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+
+    /* VCard Pro Branding Card */
+    .branding-card {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .branding-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .branding-subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .branding-icon {
+      font-size: 28px;
+    }
+
+    /* Main Features Section */
+    .main-features {
+      margin-bottom: 32px;
+      animation: slideUp 1s ease-out 0.4s both;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: white;
+      margin-bottom: 16px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .full-width-card {
+      grid-column: span 2;
+    }
+
+    /* Dashboard Cards */
+    .dashboard-card {
+      height: 140px;
+      border-radius: 20px;
+      background: white;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .dashboard-card:active {
+      transform: translateY(-2px) scale(0.98);
+    }
+
+    .card-icon {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #2D3748;
+      line-height: 20px;
+      margin-bottom: 4px;
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: #4A5568;
+    }
+
+    /* Card Background Colors */
+    .card-profile {
+      background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+    }
+
+    .card-contacts {
+      background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
+    }
+
+    .card-received {
+      background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    }
+
+    .card-vcard {
+      background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
+    }
+
+    .card-scmaster {
+      background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%);
+    }
+
+    .card-buy {
+      background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+    }
+
+    .card-insurance {
+      background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C9 100%);
+    }
+
+    /* Icon Colors */
+    .icon-profile {
+      color: #667EEA;
+    }
+
+    .icon-contacts {
+      color: #4CAF50;
+    }
+
+    .icon-received {
+      color: #2196F3;
+    }
+
+    .icon-vcard {
+      color: #8B5CF6;
+    }
+
+    .icon-scmaster {
+      color: #A855F7;
+    }
+
+    .icon-buy {
+      color: #EC4899;
+    }
+
+    .icon-insurance {
+      color: #4CAF50;
+    }
+
+    /* Logout Button */
+    .logout-section {
+      animation: slideUp 1s ease-out 0.6s both;
+    }
+
+    .logout-button {
+      width: 100%;
+      height: 56px;
+      background: #7C3AED;
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      box-shadow: 0 4px 8px rgba(124, 58, 237, 0.3);
+      transition: all 0.3s;
+    }
+
+    .logout-button:hover {
+      background: #DC2626;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(124, 58, 237, 0.4);
+    }
+
+    .logout-button:active {
+      transform: translateY(0);
+    }
+
+    /* Animations */
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-50px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .full-width-card {
+        grid-column: span 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header Section -->
+    <div class="header-section">
+      <div class="user-header">
+        <div class="user-avatar">👤</div>
+        <div class="user-greeting">
+          <div class="greeting-text" id="greetingText">Good Morning!</div>
+          <div class="user-name" id="userName">Loading...</div>
+        </div>
+        <div class="notification-bell" onclick="showNotifications()">
+          🔔
+        </div>
+      </div>
+
+      <div class="branding-card">
+        <div>
+          <div class="branding-title">📱 VCard Pro</div>
+          <div class="branding-subtitle">Smart Contact Sharing Platform</div>
+        </div>
+        <div class="branding-icon">⭐</div>
+      </div>
+    </div>
+
+    <!-- Main Features Section -->
+    <div class="main-features">
+      <div class="section-title">Main Features</div>
+
+      <!-- Row 1: Profile + Contacts -->
+      <div class="cards-grid">
+        <div class="dashboard-card card-profile" onclick="navigateTo('profile')">
+          <div class="card-icon icon-profile">👤</div>
+          <div>
+            <div class="card-title">My Profile</div>
+            <div class="card-subtitle">View & edit details</div>
+          </div>
+        </div>
+
+        <div class="dashboard-card card-contacts" onclick="navigateTo('contacts')">
+          <div class="card-icon icon-contacts">📞</div>
+          <div>
+            <div class="card-title">My Contacts</div>
+            <div class="card-subtitle">Phone contacts</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Received + VCard -->
+      <div class="cards-grid">
+        <div class="dashboard-card card-received" onclick="navigateTo('received')">
+          <div class="card-icon icon-received">📧</div>
+          <div>
+            <div class="card-title">Received<br>Contacts</div>
+            <div class="card-subtitle">Shared with you</div>
+          </div>
+        </div>
+
+        <div class="dashboard-card card-vcard" onclick="navigateTo('vcard')">
+          <div class="card-icon icon-vcard">📤</div>
+          <div>
+            <div class="card-title">VCard Page</div>
+            <div class="card-subtitle">Share your card</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3: SC Master + Buy Policy -->
+      <div class="cards-grid">
+        <div class="dashboard-card card-scmaster" onclick="navigateTo('scmaster')">
+          <div class="card-icon icon-scmaster">⭐</div>
+          <div>
+            <div class="card-title">SC Master</div>
+            <div class="card-subtitle">Read ANUR Cards</div>
+          </div>
+        </div>
+
+        <div class="dashboard-card card-buy" onclick="navigateTo('buy')">
+          <div class="card-icon icon-buy">✏️</div>
+          <div>
+            <div class="card-title">Buy Policy</div>
+            <div class="card-subtitle">Purchase insurance</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4: Insurance Manager (Full Width) -->
+      <div class="cards-grid">
+        <div class="dashboard-card card-insurance full-width-card" onclick="navigateTo('insurance')">
+          <div class="card-icon icon-insurance">🏥</div>
+          <div>
+            <div class="card-title">Insurance Manager</div>
+            <div class="card-subtitle">Manage Policies</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logout Section -->
+    <div class="logout-section">
+      <button class="logout-button" onclick="logout()">
+        <span style="font-size: 20px;">🚪</span>
+        <span>Logout</span>
+      </button>
+    </div>
+
+    <!-- Bottom Spacing -->
+    <div style="height: 24px;"></div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    // Check session on load
+    (function checkSession() {
+      const session = localStorage.getItem('userSession');
+      if (!session) {
+        window.location.href = './login.html';
+        return;
+      }
+
+      // Load user data
+      const userData = JSON.parse(session);
+      loadUserData(userData);
+    })();
+
+    function loadUserData(userData) {
+      // Set greeting
+      const hour = new Date().getHours();
+      let greeting = 'Good Morning';
+      if (hour >= 12 && hour < 17) greeting = 'Good Afternoon';
+      else if (hour >= 17) greeting = 'Good Evening';
+
+      document.getElementById('greetingText').textContent = `${greeting}!`;
+      document.getElementById('userName').textContent = userData.name || 'User';
+
+      // Fetch latest user data from API
+      if (userData.userId) {
+        fetch(`https://vcard.tecgs.com:3000/api/users/${userData.userId}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.success && data.user) {
+              document.getElementById('userName').textContent = data.user.name;
+
+              // Update session with latest data
+              const updatedSession = {
+                ...userData,
+                name: data.user.name,
+                email: data.user.email,
+                phone: data.user.phone || '',
+                profileUrl: data.user.profileUrl || '',
+                profileSlug: data.user.profileSlug || ''
+              };
+              localStorage.setItem('userSession', JSON.stringify(updatedSession));
+            }
+          })
+          .catch(error => {
+            console.error('[DASHBOARD] Error fetching user data:', error);
+          });
+      }
+    }
+
+    function navigateTo(page) {
+      console.log('[DASHBOARD] Navigating to:', page);
+
+      switch (page) {
+        case 'profile':
+          window.location.href = './myprofile.html';
+          break;
+        case 'contacts':
+          window.location.href = './mycontacts.html';
+          break;
+        case 'received':
+          window.location.href = './receivedcontacts.html';
+          break;
+        case 'vcard':
+          window.location.href = './vcardscreen.html';  // ✅ FIXED
+          break;
+        case 'scmaster':
+          window.location.href = './index.html';
+          break;
+        case 'buy':
+          window.location.href = './buy-policy.html';
+          break;
+        case 'insurance':
+          window.location.href = './insurance-manager.html';
+          break;
+        default:
+          alert('Feature coming soon!');
+      }
+    }
+
+    function showNotifications() {
+      alert('Notifications feature - Coming soon!');
+    }
+
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        console.log('[DASHBOARD] Logging out');
+
+        // Clear session
+        localStorage.removeItem('userSession');
+
+        // Notify main process
+        ipcRenderer.send('logout');
+
+        // Redirect to login
+        window.location.href = './login.html';
+      }
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://vcard.tecgs.com:3000;">
+  <title>ANUR Onewealth - Login</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 450px;
+      padding: 40px;
+    }
+
+    .login-card {
+      background: #1a1a1a;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2);
+      border: 1px solid #333;
+    }
+
+    .logo-section {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo {
+      font-size: 48px;
+      margin-bottom: 15px;
+    }
+
+    .app-title {
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #999;
+      font-size: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      color: #ccc;
+      font-size: 14px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 15px;
+      transition: all 0.3s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #8B5CF6;
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+
+    .form-input::placeholder {
+      color: #666;
+    }
+
+    .login-button {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 10px;
+    }
+
+    .login-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+    }
+
+    .login-button:active {
+      transform: translateY(0);
+    }
+
+    .login-button:disabled {
+      background: #666;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .error-message {
+      background: #dc3545;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+      animation: shake 0.5s;
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-10px);
+      }
+
+      75% {
+        transform: translateX(10px);
+      }
+    }
+
+    .loading {
+      text-align: center;
+      color: #999;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .info-text {
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+      margin-top: 20px;
+    }
+
+    /* POC Disclaimer Styles */
+    .disclaimer-section {
+      margin-bottom: 20px;
+    }
+
+    .disclaimer-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .disclaimer-checkbox input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #8B5CF6;
+    }
+
+    .disclaimer-checkbox label {
+      color: #ccc;
+      font-size: 13px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .terms-link {
+      color: #8B5CF6;
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .terms-link:hover {
+      color: #EC4899;
+    }
+
+    .disclaimer-required {
+      color: #dc3545;
+      font-size: 11px;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .disclaimer-required.show {
+      display: block;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .modal-content {
+      background: #1a1a1a;
+      margin: 5% auto;
+      padding: 0;
+      border: 1px solid #444;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      animation: slideIn 0.3s;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h2 {
+      color: #EC4899;
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .close {
+      color: #999;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .close:hover {
+      color: #fff;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-body p {
+      color: #ccc;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .modal-body ol {
+      color: #999;
+      font-size: 13px;
+      line-height: 1.8;
+      margin-left: 20px;
+    }
+
+    .modal-body ol li {
+      margin-bottom: 8px;
+    }
+
+    .modal-footer {
+      padding: 20px;
+      border-top: 1px solid #333;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .accept-btn {
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .accept-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+    }
+
+    .cancel-btn {
+      background: #333;
+      color: #ccc;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .cancel-btn:hover {
+      background: #444;
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="logo-section">
+        <div class="logo">🔷</div>
+        <h1 class="app-title">ANUR Onewealth</h1>
+        <p class="subtitle">Card Master System</p>
+      </div>
+
+      <div id="errorMessage" class="error-message"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="emailInput" class="form-input" placeholder="Enter your email" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="passwordInput" class="form-input" placeholder="Enter your password" required
+            autofocus>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">User ID</label>
+          <input type="number" id="userIdInput" class="form-input" placeholder="Enter your user ID" required>
+        </div>
+
+        <!-- POC Disclaimer Section -->
+        <div class="disclaimer-section">
+          <div class="disclaimer-checkbox">
+            <input type="checkbox" id="disclaimerCheckbox" required>
+            <label for="disclaimerCheckbox">
+              I have read and agree to the <a href="#" id="termsLink" class="terms-link">Terms & Conditions</a>
+            </label>
+          </div>
+          <div id="disclaimerRequired" class="disclaimer-required">
+            ⚠️ You must accept the Terms & Conditions to continue
+          </div>
+        </div>
+
+        <button type="submit" id="loginButton" class="login-button">
+          🔐 Login
+        </button>
+
+        <div id="loadingText" class="loading" style="display: none;">
+          Logging in...
+        </div>
+      </form>
+
+      <p class="info-text">
+        Please enter your credentials to continue
+      </p>
+    </div>
+  </div>
+
+  <!-- Terms & Conditions Modal -->
+  <div id="termsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>⚠️ PROOF OF CONCEPT DISCLAIMER</h2>
+        <span class="close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <p>
+          This application is a Proof of Concept (POC) developed for demonstration purposes only.
+          The concepts, ideas, and intellectual property (IP) presented in this app may not be copied,
+          replicated, or used without explicit written permission.
+        </p>
+
+        <p>By using this application, you acknowledge that:</p>
+
+        <ol>
+          <li>This is a demonstration/prototype application</li>
+          <li>All concepts and ideas are protected intellectual property</li>
+          <li>This app is intended for authorized employees only</li>
+          <li>Any unauthorized use, copying, or distribution is prohibited</li>
+          <li>This application should not be considered production-ready and is provided 'as-is' for evaluation purposes
+            only</li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button id="acceptTermsBtn" class="accept-btn">Accept & Close</button>
+        <button id="closeModalBtn" class="cancel-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    const loginForm = document.getElementById('loginForm');
+    const userIdInput = document.getElementById('userIdInput');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const disclaimerCheckbox = document.getElementById('disclaimerCheckbox');
+    const disclaimerRequired = document.getElementById('disclaimerRequired');
+    const loginButton = document.getElementById('loginButton');
+    const errorMessage = document.getElementById('errorMessage');
+    const loadingText = document.getElementById('loadingText');
+
+    // Modal elements
+    const termsModal = document.getElementById('termsModal');
+    const termsLink = document.getElementById('termsLink');
+    const closeModal = document.getElementsByClassName('close')[0];
+    const acceptTermsBtn = document.getElementById('acceptTermsBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    // Open modal when Terms & Conditions link is clicked
+    termsLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      termsModal.style.display = 'block';
+    });
+
+    // Close modal when X is clicked
+    closeModal.addEventListener('click', () => {
+      termsModal.style.display = 'none';
+    });
+
+    // Close modal when Close button is clicked
+    closeModalBtn.addEventListener('click', () => {
+      termsModal.style.display = 'none';
+    });
+
+    // Accept terms and close modal
+    acceptTermsBtn.addEventListener('click', () => {
+      disclaimerCheckbox.checked = true;
+      termsModal.style.display = 'none';
+      validateInputs();
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+      if (e.target === termsModal) {
+        termsModal.style.display = 'none';
+      }
+    });
+
+    // Check if already logged in on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('[LOGIN] Checking existing session');
+      const session = localStorage.getItem('userSession');
+
+      if (session) {
+        try {
+          const userData = JSON.parse(session);
+          console.log('[LOGIN] Found existing session for:', userData.name, 'userId:', userData.userId);
+
+          // Already logged in, redirect to main app
+          console.log('[LOGIN] Redirecting to main app');
+          window.location.href = './dashboard.html';
+        } catch (error) {
+          console.error('[LOGIN] Invalid session data, clearing...');
+          localStorage.removeItem('userSession');
+        }
+      } else {
+        console.log('[LOGIN] No existing session, showing login form');
+      }
+    });
+
+    // Add event listeners for real-time validation
+    function validateInputs() {
+      const userId = userIdInput.value.trim();
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      const disclaimerAccepted = disclaimerCheckbox.checked;
+
+      const isValid = userId !== '' &&
+        email !== '' &&
+        password.length >= 6 &&
+        disclaimerAccepted;
+
+      loginButton.disabled = !isValid;
+      loginButton.style.opacity = isValid ? '1' : '0.6';
+
+      // Hide disclaimer warning when checked
+      if (disclaimerAccepted) {
+        disclaimerRequired.classList.remove('show');
+      }
+    }
+
+    // Add input event listeners
+    userIdInput.addEventListener('input', validateInputs);
+    emailInput.addEventListener('input', validateInputs);
+    passwordInput.addEventListener('input', validateInputs);
+    disclaimerCheckbox.addEventListener('change', validateInputs);
+
+    // Initial validation on page load
+    validateInputs();
+
+    // Handle login form submission
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const userId = parseInt(userIdInput.value.trim());
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      const disclaimerAccepted = disclaimerCheckbox.checked;
+
+      // Validation
+      if (!userId || !email || !password) {
+        showError('Please fill in all fields');
+        return;
+      }
+
+      if (isNaN(userId) || userId <= 0) {
+        showError('Please enter a valid User ID');
+        return;
+      }
+
+      // Check disclaimer acceptance
+      if (!disclaimerAccepted) {
+        disclaimerRequired.classList.add('show');
+        showError('⚠️ You must accept the disclaimer to continue');
+        // Scroll to disclaimer
+        disclaimerCheckbox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      // Show loading state
+      loginButton.disabled = true;
+      loginButton.textContent = '⏳ Logging in...';
+      loadingText.style.display = 'block';
+      errorMessage.classList.remove('show');
+
+      try {
+        console.log('[LOGIN] Attempting login with userId:', userId, 'email:', email);
+
+        // Call login API
+        const loginResponse = await fetch('https://vcard.tecgs.com:3000/api/admin/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
+
+        console.log('[LOGIN] Login response status:', loginResponse.status);
+
+        let loginData;
+        try {
+          loginData = await loginResponse.json();
+          console.log('[LOGIN] Login response data:', loginData);
+        } catch (parseError) {
+          console.error('[LOGIN] Failed to parse response:', parseError);
+          throw new Error('Server returned invalid response');
+        }
+
+        // Check if login was successful - handle both success and error cases
+        if (!loginResponse.ok) {
+          // Login explicitly failed with error status
+          const errorMsg = loginData.message || loginData.error || `Login failed (${loginResponse.status})`;
+          console.error('[LOGIN] Login failed:', errorMsg);
+          throw new Error(errorMsg);
+        }
+
+        // Check for success in response data
+        if (loginData.message && loginData.message.toLowerCase().includes('success')) {
+          console.log('[LOGIN] Login successful! Fetching user profile...');
+
+          // Fetch user profile using the userId from form
+          const profileResponse = await fetch(`https://vcard.tecgs.com:3000/api/users/${userId}`);
+
+          if (!profileResponse.ok) {
+            console.error('[LOGIN] Profile fetch failed with status:', profileResponse.status);
+            throw new Error('Failed to fetch user profile. Please check your User ID.');
+          }
+
+          const profileData = await profileResponse.json();
+          console.log('[LOGIN] Profile data:', profileData);
+
+          if (profileData.success && profileData.user) {
+            // Save complete session
+            const userSession = {
+              userId: userId,
+              name: profileData.user.name || 'User',
+              email: profileData.user.email || email,
+              phone: profileData.user.phone || '',
+              profileUrl: profileData.user.profileUrl || '',
+              profileSlug: profileData.user.profileSlug || '',
+              loginTime: new Date().toISOString()
+            };
+
+            console.log('[LOGIN] Saving session:', userSession);
+            localStorage.setItem('userSession', JSON.stringify(userSession));
+
+            // Show success message
+            showSuccess('✅ Login successful! Redirecting...');
+
+            // Notify main process (if needed)
+            try {
+              ipcRenderer.send('login-success', userSession);
+            } catch (err) {
+              console.log('[LOGIN] Could not notify main process:', err);
+            }
+
+            // Wait a moment then navigate to main app
+            setTimeout(() => {
+              console.log('[LOGIN] Redirecting to main app');
+              window.location.href = './dashboard.html';
+            }, 1000);
+
+          } else {
+            throw new Error('Invalid user profile data received');
+          }
+
+        } else {
+          // Login response structure unexpected
+          const errorMsg = loginData.message || loginData.error || 'Invalid email or password';
+          console.error('[LOGIN] Login failed:', errorMsg);
+          throw new Error(errorMsg);
+        }
+
+      } catch (error) {
+        console.error('[LOGIN] Login error:', error);
+
+        // Ensure button is reset FIRST
+        resetButton();
+
+        // Show error message with better context
+        let displayMessage = error.message || 'An unexpected error occurred';
+
+        // Handle specific error cases
+        if (error.message.includes('fetch') || error.message.includes('NetworkError')) {
+          displayMessage = 'Cannot connect to server. Please check your internet connection.';
+        } else if (error.message.includes('Failed to fetch')) {
+          displayMessage = 'Cannot reach the server. Please check if the server is running.';
+        }
+
+        showError('❌ ' + displayMessage);
+      }
+    });
+
+    function showError(message) {
+      console.log('[LOGIN] Showing error:', message);
+
+      errorMessage.textContent = message;
+      errorMessage.style.background = '#dc3545';
+      errorMessage.style.display = 'block'; // Force display
+      errorMessage.classList.add('show');
+
+      // Auto-hide after 8 seconds (increased from 5)
+      setTimeout(() => {
+        errorMessage.classList.remove('show');
+      }, 8000);
+    }
+
+    function showSuccess(message) {
+      console.log('[LOGIN] Showing success:', message);
+
+      errorMessage.textContent = message;
+      errorMessage.style.background = '#28a745';
+      errorMessage.style.display = 'block'; // Force display
+      errorMessage.classList.add('show');
+    }
+
+    function resetButton() {
+      console.log('[LOGIN] Resetting button state');
+
+      loginButton.disabled = false;
+      loginButton.textContent = '🔐 Login';
+      loadingText.style.display = 'none';
+    }
+  </script>
+</body>
+
+</html>
