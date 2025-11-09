@@ -1,0 +1,38 @@
+{
+  "name": "anurvcardprowin",
+  "version": "1.0.0",
+  "description": "ANUR OneWealth NFC Desktop App (Electron + React)",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "webpack serve --mode development --hot",
+    "build": "webpack --mode production",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "author": "Nat / TECGS",
+  "license": "ISC",
+  "dependencies": {
+    "electron": "^39.1.1",
+    "nfc-pcsc": "^0.8.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.5",
+    "@babel/preset-env": "^7.28.5",
+    "@babel/preset-react": "^7.28.5",
+    "@electron/rebuild": "^4.0.1",
+    "babel-loader": "^10.0.0",
+    "electron-rebuild": "^3.2.9",
+    "html-webpack-plugin": "^5.6.4",
+    "webpack": "^5.102.1",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.2"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env",
+      "@babel/preset-react"
+    ]
+  }
+}
